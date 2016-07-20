@@ -174,7 +174,6 @@ function Get-CommandParameter
 		$params = [System.Management.Automation.Language.StaticParameterBinder]::BindCommand($Command)
 		if (($Command.Parent.Extent.Text -match '\|') -and ($params.BindingExceptions.Count -eq 0) -and ($params.BoundParameters.Count -eq 0))
 		{
-			$pipelinedCommandName = [regex]::matches($Command.Parent.Extent.Text, '\|(?:\s+)?(.+)$').Groups[1].Value
 			[pscustomobject]@{ 'PipelineInput' = 'PipelineInput' }
 		}
 		
@@ -189,7 +188,6 @@ function Get-CommandParameter
 					## splat parameters. These are not problems but need to be processed differently.
 					$bParams = $_.BindingExceptions + $_.BoundParameters
 					@($bParams.GetEnumerator()).where({ $_.Key -notin 'like', 'eq', 'match', 'and' }).foreach({
-							$param = @{ }
 							if ($_.Key -match '^@')
 							{
 								$paramName = $_.Value -replace "'|`""
