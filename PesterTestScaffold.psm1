@@ -172,17 +172,18 @@ function Get-CommandParameter
 		## When the pipeline is used to pass parameters to commands, it does not show up as a StaticParamater and must
 		## be processed differently.
 		$params = [System.Management.Automation.Language.StaticParameterBinder]::BindCommand($Command)
+		
+		$outputHt = @{ }
 		if (($Command.Parent.Extent.Text -match '\|') -and ($params.BindingExceptions.Count -eq 0) -and ($params.BoundParameters.Count -eq 0))
 		{
-			[pscustomobject]@{ 'PipelineInput' = 'PipelineInput' }
-		}
-		
-		if ($params)
+			$outputHt['PipelineInput'] = 'PipelineInput'
+
+		} 
+		elseif ($params) 
 		{
 			$commandName = $Command.CommandElements[0].Value
 			$commandInfo = Get-Command -Name $commandName -ErrorAction Ignore
 			
-			$outputHt = @{ }
 			@($params).foreach({
 					## Merge both exceptions and bound parameters together. BindingExceptions sometimes contains
 					## splat parameters. These are not problems but need to be processed differently.
@@ -241,8 +242,8 @@ in a hashtable somewhere else in the script/function, the calling function comma
 							}
 						})
 				})
-			$outputHt
 		}
+		$outputHt
 	}
 	catch
 	{
