@@ -529,12 +529,10 @@ function New-MockTemplate
 		[string]$CommandName,
 		
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[scriptblock]$MockWith,
+		[string]$MockWith,
 		
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[scriptblock]$ParameterFilter
+		[string]$ParameterFilter
 	)
 	begin
 	{
@@ -543,26 +541,18 @@ function New-MockTemplate
 	process
 	{
 		try
-		{
-			$props = @($CommandName)
-			if ($PSBoundParameters.ContainsKey('MockWith'))
+		{	
+			if ($ParameterFilter)
 			{
-				$props += "{`n`t $MockWith`n}"
-			}
-			else
-			{
-				$props += $null
-			}
-			if ($PSBoundParameters.ContainsKey('ParameterFilter'))
-			{
-				$props += "-ParameterFilter { $ParameterFilter }"
-			}
-			else
-			{
-				$props += $null
+				$ParameterFilter = "-ParameterFilter { $ParameterFilter }"
 			}
 			
-			"mock '{0}'{1} {2}" -f $props
+			@'
+mock '{0}' {{
+	{1}
+}} {2}
+'@ -f $CommandName,$MockWith,$ParameterFilter
+
 		}
 		catch
 		{
@@ -607,7 +597,7 @@ function New-MockParameterFilterTemplate
 		try
 		{
 			[array]$arr = $Parameter.Getenumerator().foreach({
-					"$($_.Name) -eq '$($_.Value)'"
+					"`$$($_.Name) -eq '$($_.Value)'"
 				})
 			$paramfilter = $arr -join ' -and '
 			[scriptblock]::Create($paramfilter)
@@ -678,18 +668,19 @@ function New-DescribeBlockTemplate
 		{
 			if ($funcRefs = Find-FunctionReference -FunctionName $FunctionName)
 			{
-				$mockTemplates = @($funcRefs).foreach({
-						$params = @{
-							'CommandName' = $_.ChildFunction
-						}
-						if ($_.ChildFunctionParameter)
-						{
-							$params.ParameterFilter = New-MockParameterFilterTemplate $_.ChildFunctionParameter
-							New-MockTemplate @params
-						}
-					})
-				
-				$mockTemplates
+				@($funcRefs).foreach({
+					$params = @{
+						CommandName = $_.ChildFunction
+						MockWith = $null
+					}
+					if ($_.ChildFunctionParameter)
+					{
+						$params.ParameterFilter = New-MockParameterFilterTemplate $_.ChildFunctionParameter
+					} else {
+						$params.ParameterFilter = $null
+					}
+					New-MockTemplate @params
+				})
 			}
 		}
 		catch
