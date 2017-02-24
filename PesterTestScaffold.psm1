@@ -597,7 +597,11 @@ function New-MockParameterFilterTemplate
 		try
 		{
 			[array]$arr = $Parameter.Getenumerator().foreach({
-					"`$$($_.Name) -eq '$($_.Value)'"
+					if (-not $_.Value) {
+						'{0}{1}' -f '$',$_.Name
+					} else {
+						"`${0} -eq '{1}'" -f $_.Name,$_.Value
+					}
 				})
 			$paramfilter = $arr -join ' -and '
 			[scriptblock]::Create($paramfilter)
