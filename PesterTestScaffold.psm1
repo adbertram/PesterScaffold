@@ -707,3 +707,28 @@ describe '{0}' {{
 		}
 	}
 }
+
+function New-ItBlockTemplate
+{
+	[OutputType()]
+	[CmdletBinding()]
+	param
+	(
+		
+	)
+	begin
+	{
+		$ErrorActionPreference = 'Stop'
+	}
+	process
+	{
+		try
+		{
+
+		}
+		catch
+		{
+			$PSCmdlet.ThrowTerminatingError($_)
+		}
+	}
+}
