@@ -676,7 +676,7 @@ function New-DescribeBlockTemplate
 		{
 			if ($funcRefs = @(Find-FunctionReference -FunctionName $FunctionName).where({$_.ChildFunction -notin $ExcludeCommandMock}))
 			{
-				@($funcRefs).foreach({
+				$mockTemplates = @($funcRefs).foreach({
 					$params = @{
 						CommandName = $_.ChildFunction
 						MockWith = $null
@@ -690,6 +690,15 @@ function New-DescribeBlockTemplate
 					$template = New-MockTemplate @params
 					$template + "`n"
 				})
+				@'
+describe '{0}' {{
+
+#region Mocks
+{1}
+#endregion
+
+}}				
+'@ -f $FunctionName,[string]$mockTemplates
 			}
 		}
 		catch
