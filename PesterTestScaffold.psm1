@@ -660,7 +660,11 @@ function New-DescribeBlockTemplate
 	(
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
-		[string]$FunctionName
+		[string]$FunctionName,
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[string[]]$ExcludeCommandMock = @('Write-Verbose','Write-Host')
 	)
 	begin
 	{
@@ -670,7 +674,7 @@ function New-DescribeBlockTemplate
 	{
 		try
 		{
-			if ($funcRefs = Find-FunctionReference -FunctionName $FunctionName)
+			if ($funcRefs = @(Find-FunctionReference -FunctionName $FunctionName).where({$_.ChildFunction -notin $ExcludeCommandMock}))
 			{
 				@($funcRefs).foreach({
 					$params = @{
