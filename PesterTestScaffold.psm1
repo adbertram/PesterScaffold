@@ -683,7 +683,8 @@ function New-DescribeBlockTemplate
 					} else {
 						$params.ParameterFilter = $null
 					}
-					New-MockTemplate @params
+					$template = New-MockTemplate @params
+					$template + "`n"
 				})
 			}
 		}
